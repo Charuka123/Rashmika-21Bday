@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>රශ්මිකගේ 21 වෙනි උපන්දිනය! 🎂</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-image: url('https://images.unsplash.com/photo-1513151233558-d860c5398176?q=80&w=2070&auto=format&fit=crop'); 
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, rgba(230, 57, 70, 0.9), rgba(241, 250, 238, 0.8)); 
+            color: white;
+            padding: 60px 0 40px;
+            border-radius: 0 0 40px 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .rashmika-photo {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%; 
+            border: 5px solid white;
+            object-fit: cover; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+
+        .upload-card {
+            background: rgba(255, 255, 255, 0.95); 
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .wish-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .wish-card:hover { transform: translateY(-5px); }
+
+        .wish-card img, .wish-card video {
+            width: 100%;
+            height: 250px; 
+            object-fit: cover;
+            display: block;
+        }
+
+        .wish-msg {
+            padding: 20px;
+            font-weight: 600;
+            text-align: center;
+            color: #222;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            margin-top: 50px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 20px 20px 0 0;
+        }
+
+        .created-by { font-size: 0.85em; color: #777; font-style: italic; }
+    </style>
+</head>
+<body>
+
+<div class="hero text-center shadow-lg">
+    <div class="container">
+        <img id="rashmikaPhoto" src="https://res.cloudinary.com/dokzdfdwe/image/upload/v1774203166/WhatsApp_Image_2026-03-22_at_23.40.59_tjm3km.jpg" alt="Rashmika" class="rashmika-photo"> 
+        <h1 class="display-4 fw-bold">රශ්මිකගේ 21 වෙනි උපන්දිනය! 🎉🎂</h1>
+        <p class="lead">අපේ සුපිරි මතකයන් සහ සුබ පැතුම් මෙතනට එක් කරන්න</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-7 upload-card">
+            <h5 class="text-center mb-3">ඔයාගේ මතකය/සුබ පැතුම එක් කරන්න</h5>
+            <input type="file" id="fileInput" class="form-control mb-2" accept="image/*,video/*">
+            <textarea id="msgInput" class="form-control mb-3" placeholder="ඔයාගේ සුබ පැතුම මෙතන ලියන්න..." rows="3"></textarea>
+            <button id="uploadBtn" class="btn btn-danger w-100 fw-bold btn-lg">Upload & Wish Now!</button>
+            <div id="status" class="text-center mt-2 small"></div>
+        </div>
+    </div>
+
+    <div class="row mt-5" id="gallery"></div>
+</div>
+
+<footer>
+    <div class="container">
+        <p class="created-by">Created By Mr. Charu</p>
+    </div>
+</footer>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyC8oDJIXC6ZgZPX8Ir46dh6U_kcCX4n-H4",
+        authDomain: "rashmika-a00aa.firebaseapp.com",
+        projectId: "rashmika-a00aa",
+        storageBucket: "rashmika-a00aa.firebasestorage.app",
+        messagingSenderId: "80141055423",
+        appId: "1:80141055423:web:44de100f94e8c645a05d0a",
+    };
+
+    const CLOUD_NAME = "dokzdfdwe"; 
+    const UPLOAD_PRESET = "rashmika_preset"; 
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const uploadBtn = document.getElementById('uploadBtn');
+    const fileInput = document.getElementById('fileInput');
+    const msgInput = document.getElementById('msgInput');
+    const status = document.getElementById('status');
+    const gallery = document.getElementById('gallery');
+
+    uploadBtn.onclick = async () => {
+        const file = fileInput.files[0];
+        if (!file) return alert("කරුණාකර පින්තූරයක් හෝ වීඩියෝවක් තෝරන්න!");
+        uploadBtn.disabled = true;
+        status.innerText = "Cloud එකට Upload වෙනවා...";
+
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', UPLOAD_PRESET);
+            const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/upload`, {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            const fileUrl = data.secure_url;
+
+            await addDoc(collection(db, "rashmika_wishes"), {
+                url: fileUrl,
+                message: msgInput.value,
+                type: file.type.startsWith('image') ? 'image' : 'video',
+                time: new Date()
+            });
+            status.innerText = "සාර්ථකව එක් කළා! ✅";
+            fileInput.value = ""; msgInput.value = "";
+        } catch (e) {
+            status.innerText = "වැරදීමක් වුණා!";
+            console.error(e);
+        }
+        uploadBtn.disabled = false;
+    };
+
+    const q = query(collection(db, "rashmika_wishes"), orderBy("time", "desc"));
+    onSnapshot(q, (snap) => {
+        gallery.innerHTML = "";
+        snap.forEach(doc => {
+            const item = doc.data();
+            let media = item.type === 'image' ? `<img src="${item.url}">` : `<video src="${item.url}" controls></video>`;
+            gallery.innerHTML += `<div class="col-md-4 col-sm-6"><div class="wish-card shadow border">${media}<div class="wish-msg">${item.message || 'Happy Birthday! 🎉'}</div></div></div>`;
+        });
+    });
+</script>
+</body>
+</html>
